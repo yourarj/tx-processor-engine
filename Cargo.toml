@@ -2,10 +2,19 @@
 name = "tx-processor-engine"
 version = "0.1.0"
 edition = "2021"
+authors = ["Shinde Arjun"]
+description = "simple transaction processing engine"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.dev]
+opt-level = 3
+lto = "fat"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
 
 [dependencies]
 clap = { version = "3.2.14", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 csv = "1"
+thiserror = "1.0"
