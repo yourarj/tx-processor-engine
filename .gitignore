@@ -1,2 +1,5 @@
 /target
+# exclude all CSVs
 *.csv
+# include CSVs in testinput
+!**/test_input/**/*.csv

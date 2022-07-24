@@ -9,10 +9,13 @@ pub struct Client {
     /// client ID
     client: u16,
     /// available amount
+    #[serde(serialize_with = "round_serialize_f64")]
     available: f64,
     /// held amount
+    #[serde(serialize_with = "round_serialize_f64")]
     held: f64,
     /// total amount
+    #[serde(serialize_with = "round_serialize_f64")]
     total: f64,
     /// is this client account is locked/ freezed
     locked: bool,
@@ -104,4 +107,13 @@ impl Client {
             Ok(())
         }
     }
+}
+
+use serde::Serializer;
+
+fn round_serialize_f64<S>(x: &f64, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    s.serialize_f64(format!("{:.4}", x).parse().unwrap())
 }
