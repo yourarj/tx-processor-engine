@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use super::error::ClientError;
 
 // client account
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Client {
     /// client ID
     client: u16,

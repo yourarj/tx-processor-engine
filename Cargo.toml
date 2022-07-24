@@ -7,8 +7,6 @@ description = "An awesome 😎 transaction processing engine"
 homepage = "https://github.com/yourarj/tx-processor-engine"
 publish = false
 default-run = "tx_executor"
-license = "MIT"
-license-file = "LICENSE"
 
 [lib]
 name = "tx_processing_engine"
@@ -31,3 +29,7 @@ clap = { version = "3.2.14", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 csv = "1"
 thiserror = "1.0"
+
+# for tokio approach
+tokio = { version = "1", features = ["full"] }
+num_cpus = "1.0"

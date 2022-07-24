@@ -20,6 +20,9 @@ impl Engine {
     pub fn get_account_state(&self) -> &HashMap<u16, Client> {
         &self.accounts
     }
+    pub fn get_account_state_owned(&self) -> HashMap<u16, Client> {
+        self.accounts.clone()
+    }
 
     pub fn execute_transaction(&mut self, tx: Transaction) -> Result<(), Box<dyn Error>> {
         // validate transaction amount first
