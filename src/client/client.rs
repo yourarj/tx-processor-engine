@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 
 // TODO add missing documentation
 use super::error::ClientError;
+
+// client account
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Client {
     /// client ID
@@ -15,7 +17,7 @@ pub struct Client {
     /// is this client account is locked/ freezed
     locked: bool,
 }
-
+// way to construct new client
 impl Client {
     pub fn new(client_id: u16) -> Self {
         Self {
@@ -29,7 +31,7 @@ impl Client {
 }
 
 impl Client {
-    /// actions to take as response to deposit
+    /// actions to take as response to deposit is requested
     pub fn respond_to_deposit(&mut self, amt: f64) -> Result<(), ClientError> {
         // check if account is not locked
         if self.locked {
@@ -41,7 +43,7 @@ impl Client {
         }
     }
 
-    /// actions to take as response to withdraw
+    /// actions to take as response to withdraw is requested
     pub fn respond_to_withdraw(&mut self, amt: f64) -> Result<(), ClientError> {
         if self.available < amt || self.total < amt {
             Err(ClientError::InsufficientAccountBalance(self.client))
@@ -54,6 +56,7 @@ impl Client {
         }
     }
 
+    // actions to take when dispute is requested
     pub fn respond_to_dispute(&mut self, amt: f64) -> Result<(), ClientError> {
         if self.available < amt || self.total < amt {
             Err(ClientError::InsufficientAccountBalance(self.client))
@@ -69,6 +72,7 @@ impl Client {
         }
     }
 
+    // actions to take resolve is requested
     pub fn respond_to_resolve(&mut self, amt: f64) -> Result<(), ClientError> {
         if self.held < amt {
             Err(ClientError::InsufficientAccountBalance(self.client))
@@ -84,6 +88,7 @@ impl Client {
         }
     }
 
+    // actions to perform when chargeback is requested
     pub fn respond_to_chargeback(&mut self, amt: f64) -> Result<(), ClientError> {
         if self.held < amt || self.total < amt {
             Err(ClientError::InsufficientAccountBalance(self.client))

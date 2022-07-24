@@ -1,3 +1,5 @@
+//! Deals with Transactions
+
 pub(crate) mod error;
 pub mod execution_engine;
 pub mod transaction;

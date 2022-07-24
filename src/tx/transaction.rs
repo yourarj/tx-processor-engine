@@ -23,6 +23,18 @@ pub struct Transaction {
     status: Option<TransactionStatus>,
 }
 
+impl Default for Transaction {
+    fn default() -> Self {
+        Self {
+            tx_type: Default::default(),
+            client: Default::default(),
+            tx: Default::default(),
+            amount: Default::default(),
+            status: Default::default(),
+        }
+    }
+}
+
 impl Transaction {
     /// get transaction id
     pub fn get_id(&self) -> u32 {

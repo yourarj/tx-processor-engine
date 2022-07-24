@@ -8,5 +8,5 @@ pub struct Args {
     pub file: String,
     /// should log errors?
     #[clap(short, long, value_parser, default_value_t = false)]
-    pub log_errors: bool
+    pub log_errors: bool,
 }

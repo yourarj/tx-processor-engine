@@ -19,3 +19,9 @@ pub enum TransactionType {
     /// mark a dispute as chargeback
     chargeback,
 }
+
+impl Default for TransactionType {
+    fn default() -> Self {
+        Self::deposit
+    }
+}
