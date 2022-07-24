@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-// TODO add missing documentation
 use super::error::ClientError;
 
-// client account
+/// client account
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Client {
     /// client ID
@@ -22,6 +21,7 @@ pub struct Client {
 }
 // way to construct new client
 impl Client {
+    /// construct new client
     pub fn new(client_id: u16) -> Self {
         Self {
             client: client_id,
@@ -32,22 +32,27 @@ impl Client {
         }
     }
 
+    /// get client 
     pub fn get_client(&self) -> u16 {
         self.client
     }
 
+    /// get available fund
     pub fn get_available(&self) -> f64 {
         self.available
     }
 
+    /// get held fund
     pub fn get_held(&self) -> f64 {
         self.held
     }
 
+    /// get total fund in account
     pub fn get_total(&self) -> f64 {
         self.total
     }
 
+    /// check if account is locked
     pub fn is_locked(&self) -> bool {
         self.locked
     }

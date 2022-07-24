@@ -11,6 +11,8 @@ to run application run `cargo run -- <path_to_csv_file>` output will be written 
 
 for more detailed information run `cargo run -- --help`
 
+to run all 21 tests, please run `cargo test`
+
 ```
 tx-processor-engine 0.4.0
 Shinde Arjun

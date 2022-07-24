@@ -4,12 +4,16 @@ use crate::client::client::Client;
 
 use super::{error::TransactionError, transaction::Transaction, transaction_type::TransactionType};
 
+/// transaction execution engine
+///
+/// holds state of accounts and transactions
 pub struct Engine {
     accounts: HashMap<u16, Client>,
     transactions: HashMap<u32, Transaction>,
 }
 
 impl Engine {
+    /// initialize engine
     pub fn initialize() -> Self {
         Engine {
             accounts: HashMap::new(),
@@ -17,14 +21,21 @@ impl Engine {
         }
     }
 
+    /// get engine's current account state
     pub fn get_account_state(&self) -> &HashMap<u16, Client> {
         &self.accounts
     }
 
+    /// get owned copy of account state
     pub fn get_account_state_owned(&self) -> HashMap<u16, Client> {
         self.accounts.clone()
     }
 
+    /// execute the transaction and mutate the engine state accordingly
+    ///
+    /// ## Arguments
+    ///
+    /// * `tx` - transaction
     pub fn execute_transaction(&mut self, tx: Transaction) -> Result<(), Box<dyn Error>> {
         // validate transaction amount first
         Self::validate_transaction(&tx)?;
@@ -59,6 +70,7 @@ impl Engine {
             }
             TransactionType::dispute => {
                 let mut inner = opt_tx?;
+                Self::is_deposit(&inner)?;
                 inner.is_untouched()?;
                 client.respond_to_dispute(inner.get_amt())?;
                 inner.mark_under_dispute()?;
@@ -92,6 +104,11 @@ impl Engine {
         Ok(tx.clone())
     }
 
+    /// validate transaction amount
+    ///
+    /// ## Arguments
+    ///
+    /// * `tx` - transaction
     fn validate_transaction(tx: &Transaction) -> Result<(), TransactionError> {
         match tx.get_type() {
             TransactionType::deposit | TransactionType::withdrawal => {
@@ -104,9 +121,23 @@ impl Engine {
                     Ok(())
                 }
             }
-            TransactionType::dispute | TransactionType::resolve | TransactionType::chargeback => {
-                Ok(())
-            }
+            _ => Ok(()),
+        }
+    }
+
+    /// validate transaction is deposit
+    ///
+    /// ## Arguments
+    ///
+    /// * `tx` - transaction
+    fn is_deposit(tx: &Transaction) -> Result<(), TransactionError> {
+        match tx.get_type() {
+            TransactionType::deposit => Ok(()),
+
+            _ => Err(TransactionError::InvalidTransactionAmount(
+                tx.get_id(),
+                tx.get_amt(),
+            )),
         }
     }
 }

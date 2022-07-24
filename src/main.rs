@@ -14,6 +14,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+/// file processing
+/// input: String: filepath
+/// input: bool: should print error
 fn process_file(file: String, log_errors: bool) -> Result<HashMap<u16, Client>, Box<dyn Error>> {
     let mut exec_engine = Engine::initialize();
     // TODO handle deserialization error for a malformed record
