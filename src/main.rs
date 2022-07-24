@@ -1,14 +1,11 @@
-mod client;
-mod tx;
-mod util;
-
-use crate::{
-    tx::{execution_engine::Engine, transaction::Transaction},
-    util::file_parser::parse,
-};
 use clap::Parser;
 use std::error::Error;
-use util::args::Args;
+use tx_processing_engine::{
+    tx::{execution_engine::Engine, transaction::Transaction},
+    util::args::Args,
+    util::csv_output_writer,
+    util::file_parser::parse,
+};
 
 /// main method processing file
 fn main() -> Result<(), Box<dyn Error>> {
@@ -34,6 +31,6 @@ fn process_file(file: String, log_errors: bool) -> Result<(), Box<dyn Error>> {
             }
         }
     }
-    util::csv_output_writer::write_csv_to_console(exec_engine.get_account_state())?;
+    csv_output_writer::write_csv_to_console(exec_engine.get_account_state())?;
     Ok(())
 }

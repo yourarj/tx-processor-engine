@@ -1,9 +1,22 @@
 [package]
 name = "tx-processor-engine"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Shinde Arjun"]
-description = "simple transaction processing engine"
+description = "An awesome 😎 transaction processing engine"
+homepage = "https://github.com/yourarj/tx-processor-engine"
+publish = false
+default-run = "tx_executor"
+license = "MIT"
+license-file = "LICENSE"
+
+[lib]
+name = "tx_processing_engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tx_executor"
+path = "src/main.rs"
 
 [profile.dev]
 opt-level = 3
