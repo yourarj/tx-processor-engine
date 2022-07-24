@@ -54,8 +54,39 @@ impl Transaction {
         self.tx_type.clone()
     }
 
-    /// check the conditions and mark a transactions as
-    /// under dispute
+    /// check the conditions
+    pub fn is_untouched(&mut self) -> Result<(), TransactionError> {
+        match self.status {
+            None => Ok(()),
+            _ => Err(TransactionError::InvalidTransactionState(self.get_id())),
+        }
+    }
+
+    /// check the conditions
+    pub fn is_under_dispute(&mut self) -> Result<(), TransactionError> {
+        match self.status {
+            Some(TransactionStatus::under_dispute) => Ok(()),
+            _ => Err(TransactionError::InvalidTransactionState(self.get_id())),
+        }
+    }
+
+    /// check the conditions 
+    pub fn is_marked_resolved(&mut self) -> Result<(), TransactionError> {
+        match self.status {
+            Some(TransactionStatus::resolved) => Ok(()),
+            _ => Err(TransactionError::InvalidTransactionState(self.get_id())),
+        }
+    }
+
+    /// check the conditions
+    pub fn is_marked_chargebacked(&mut self) -> Result<(), TransactionError> {
+        match self.status {
+            Some(TransactionStatus::chargebacked) => Ok(()),
+            _ => Err(TransactionError::InvalidTransactionState(self.get_id())),
+        }
+    }
+
+    /// check the conditions 
     pub fn mark_under_dispute(&mut self) -> Result<(), TransactionError> {
         match self.status {
             None => {

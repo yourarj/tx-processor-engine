@@ -7,8 +7,6 @@ description = "An awesome 😎 transaction processing engine"
 homepage = "https://github.com/yourarj/tx-processor-engine"
 publish = false
 default-run = "tx_executor"
-license = "MIT"
-license-file = "LICENSE"
 
 [lib]
 name = "tx_processing_engine"

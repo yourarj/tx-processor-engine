@@ -2,4 +2,4 @@ type, client, tx, amount
 deposit,1, 1, 1.0
 dispute,1, 1
 chargeback,1, 1
-withdraw,1, 2, 0.5
+withdrawal,1, 2, 0.5

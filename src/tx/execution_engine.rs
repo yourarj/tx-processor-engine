@@ -21,6 +21,10 @@ impl Engine {
         &self.accounts
     }
 
+    pub fn get_account_state_owned(&self) -> HashMap<u16, Client> {
+        self.accounts.clone()
+    }
+
     pub fn execute_transaction(&mut self, tx: Transaction) -> Result<(), Box<dyn Error>> {
         // validate transaction amount first
         Self::validate_transaction(&tx)?;
@@ -55,20 +59,26 @@ impl Engine {
             }
             TransactionType::dispute => {
                 let mut inner = opt_tx?;
+                inner.is_untouched()?;
                 client.respond_to_dispute(inner.get_amt())?;
                 inner.mark_under_dispute()?;
+                self.transactions.insert(inner.get_id(), inner);
                 Ok(())
             }
             TransactionType::resolve => {
                 let mut inner = opt_tx?;
+                inner.is_under_dispute()?;
                 client.respond_to_resolve(inner.get_amt())?;
                 inner.mark_resolved()?;
+                self.transactions.insert(inner.get_id(), inner);
                 Ok(())
             }
             TransactionType::chargeback => {
                 let mut inner = opt_tx?;
+                inner.is_under_dispute()?;
                 client.respond_to_chargeback(inner.get_amt())?;
                 inner.mark_chargebacked()?;
+                self.transactions.insert(inner.get_id(), inner);
                 Ok(())
             }
         }

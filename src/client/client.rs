@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use super::error::ClientError;
 
 // client account
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Client {
     /// client ID
     client: u16,
@@ -30,6 +30,26 @@ impl Client {
             total: Default::default(),
             locked: Default::default(),
         }
+    }
+
+    pub fn get_client(&self) -> u16 {
+        self.client
+    }
+
+    pub fn get_available(&self) -> f64 {
+        self.available
+    }
+
+    pub fn get_held(&self) -> f64 {
+        self.held
+    }
+
+    pub fn get_total(&self) -> f64 {
+        self.total
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.locked
     }
 }
 

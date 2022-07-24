@@ -2,4 +2,3 @@ type, client, tx, amount
 deposit,1, 1, 1.0
 dispute,1, 1
 resolve,1, 1
-

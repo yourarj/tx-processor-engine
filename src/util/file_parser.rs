@@ -10,6 +10,7 @@ pub fn parse(file: String) -> Result<Reader<BufReader<File>>, Box<dyn Error>> {
     let csv_reader = csv::ReaderBuilder::new()
         .buffer_capacity(512 * 1024 * 1024)
         .trim(Trim::All)
+        .flexible(true)
         .from_reader(buf_reader);
 
     Ok(csv_reader)
