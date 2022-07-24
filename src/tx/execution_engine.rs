@@ -44,34 +44,31 @@ impl Engine {
 
         match tx_type {
             TransactionType::deposit => {
-                self.transactions.insert(tx_id, tx);
                 client.respond_to_deposit(tx_amt)?;
+                self.transactions.insert(tx_id, tx);
                 Ok(())
             }
             TransactionType::withdrawal => {
-                self.transactions.insert(tx_id, tx);
                 client.respond_to_withdraw(tx_amt)?;
+                self.transactions.insert(tx_id, tx);
                 Ok(())
             }
             TransactionType::dispute => {
                 let mut inner = opt_tx?;
-                inner.mark_under_dispute()?;
                 client.respond_to_dispute(inner.get_amt())?;
-                self.transactions.insert(inner.get_id(), inner);
+                inner.mark_under_dispute()?;
                 Ok(())
             }
             TransactionType::resolve => {
                 let mut inner = opt_tx?;
-                inner.mark_resolved()?;
                 client.respond_to_resolve(inner.get_amt())?;
-                self.transactions.insert(inner.get_id(), inner);
+                inner.mark_resolved()?;
                 Ok(())
             }
             TransactionType::chargeback => {
                 let mut inner = opt_tx?;
-                inner.mark_chargebacked()?;
                 client.respond_to_chargeback(inner.get_amt())?;
-                self.transactions.insert(inner.get_id(), inner);
+                inner.mark_chargebacked()?;
                 Ok(())
             }
         }
