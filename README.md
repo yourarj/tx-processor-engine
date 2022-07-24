@@ -2,4 +2,4 @@
 A simple tx processor engine
 
 Decision Tree considered while engineering the solution
-![image description](resources/decision_tree.png)
+![image description](resources/probability_tree.png)
