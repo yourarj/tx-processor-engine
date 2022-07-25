@@ -25,9 +25,6 @@ impl Engine {
     pub fn get_account_state(&self) -> &HashMap<u16, Client> {
         &self.accounts
     }
-    pub fn get_account_state_owned(&self) -> HashMap<u16, Client> {
-        self.accounts.clone()
-    }
 
     /// get owned copy of account state
     pub fn get_account_state_owned(&self) -> HashMap<u16, Client> {
