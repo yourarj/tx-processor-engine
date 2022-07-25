@@ -1,24 +1,27 @@
 use serde::{Deserialize, Serialize};
 
-// TODO add missing documentation
 use super::error::ClientError;
 
-// client account
+/// client account
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Client {
     /// client ID
     client: u16,
     /// available amount
+    #[serde(serialize_with = "round_serialize_f64")]
     available: f64,
     /// held amount
+    #[serde(serialize_with = "round_serialize_f64")]
     held: f64,
     /// total amount
+    #[serde(serialize_with = "round_serialize_f64")]
     total: f64,
     /// is this client account is locked/ freezed
     locked: bool,
 }
 // way to construct new client
 impl Client {
+    /// construct new client
     pub fn new(client_id: u16) -> Self {
         Self {
             client: client_id,
@@ -27,6 +30,31 @@ impl Client {
             total: Default::default(),
             locked: Default::default(),
         }
+    }
+
+    /// get client 
+    pub fn get_client(&self) -> u16 {
+        self.client
+    }
+
+    /// get available fund
+    pub fn get_available(&self) -> f64 {
+        self.available
+    }
+
+    /// get held fund
+    pub fn get_held(&self) -> f64 {
+        self.held
+    }
+
+    /// get total fund in account
+    pub fn get_total(&self) -> f64 {
+        self.total
+    }
+
+    /// check if account is locked
+    pub fn is_locked(&self) -> bool {
+        self.locked
     }
 }
 
@@ -104,4 +132,13 @@ impl Client {
             Ok(())
         }
     }
+}
+
+use serde::Serializer;
+
+fn round_serialize_f64<S>(x: &f64, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    s.serialize_f64(format!("{:.4}", x).parse().unwrap())
 }
