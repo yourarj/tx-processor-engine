@@ -9,13 +9,15 @@ An Awesome 😎 tx processor engine
 - `DEPOSIT` causing overflow are also ignores. Has to be malicious
 - Any client with not a SINGLE valid transaction will be omitted from result.
 ## How To
-to run application run `cargo run -- <path_to_csv_file>` output will be written to console
+ - Get help with  `cargo run -- --help`
 
-for more detailed information run `cargo run -- --help`
+ - Run with  `cargo run -- <path_to_csv_file>` 
 
-## Tests
-to run all **43** tests, please run `cargo test`
+ - Run with error to std err `cargo run -- -l <path_to_csv_file>`
 
+ - Get app version with  `cargo run -- -V`
+
+### help preview
 ```
 tx-processor-engine 1.0.0
 Shinde Arjun
@@ -33,7 +35,12 @@ OPTIONS:
     -V, --version       Print version information
 ```
 
-Probability tree considered while engineering the solution
+
+## Tests
+to run all **43** tests, please run `cargo test`
+
+## Design considerations
+Following probability tree was considered while engineering the solution
 
 ![image description](resources/probability_tree.png)
 
