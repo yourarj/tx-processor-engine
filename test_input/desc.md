@@ -89,3 +89,88 @@ The following cases have been tested and covered under tests.
     22. case_22
        - genesis -> deposit -> partial_withdraw -> full_withdraw
        - ignore
+    
+    23. case_23
+       - deposit negative amount
+       - ignore
+  
+    24. case_24
+       - withdraw negative amount
+       - ignore
+    
+    25. case_25
+       - deposit amount that is max allowed by container type
+       - deposit amount that max allowed by container type
+       - ignore second deposit
+    
+    26. case_26
+       - deposit amount larger than max allowed by container type
+       - ignore
+
+    27. case_27
+       - deposit without amount
+       - ignore / no impact on funds
+
+    28. case_28
+       - withdraw without amount
+       - ignore / no impact on funds
+
+    29. case_29
+       - deposit without client id
+       - ignore
+
+    30. case_30
+       - deposit tx id
+       - ignore
+
+    31. case_31
+       - withdraw without client id
+       - ignore
+
+    32. case_32
+       - withdraw without tx id
+       - ignore
+
+    33. case_33
+       - dispute without client id
+       - ignore
+
+    34. case_34
+       - dispute without tx id
+       - ignore
+
+    35. case_35
+       - resolve without client id
+       - ignore
+
+    36. case_36
+       - resolve without tx id
+       - ignore
+
+    37. case_37
+       - chargeback without client id
+       - ignore
+
+    38. case_38
+       - chargeback without tx id
+       - ignore
+
+    39. case_39
+       - withdraw amount exactly f64::MAX
+       - ignore
+
+    40. case_40
+       - try negative number as client id
+       - ignore
+
+    41. case_41
+       - try client id larger than u16
+       - ignore
+
+    42. case_42
+       - try negative number as tx id
+       - ignore
+
+    43. case_43
+       - try tx id larger than u32 
+       - ignore

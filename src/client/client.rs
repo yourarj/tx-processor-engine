@@ -32,7 +32,7 @@ impl Client {
         }
     }
 
-    /// get client 
+    /// get client
     pub fn get_client(&self) -> u16 {
         self.client
     }
@@ -64,6 +64,8 @@ impl Client {
         // check if account is not locked
         if self.locked {
             Err(ClientError::ClientAccountLocked(self.client))
+        } else if (self.available + amt).is_infinite() || (self.total + amt).is_infinite() {
+            Err(ClientError::ClientFundsWouldOverflow(self.client))
         } else {
             self.available += amt;
             self.total += amt;
@@ -77,6 +79,8 @@ impl Client {
             Err(ClientError::InsufficientAccountBalance(self.client))
         } else if self.locked {
             Err(ClientError::ClientAccountLocked(self.client))
+        }else if (self.available - amt).is_sign_negative() || (self.total - amt).is_sign_negative() {
+            Err(ClientError::ClientFundsWouldOverflow(self.client))
         } else {
             self.available -= amt;
             self.total -= amt;
