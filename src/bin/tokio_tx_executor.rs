@@ -1,10 +1,9 @@
 ///! Should be ignore for now
 ///! incomplete
-
 use std::{collections::HashMap, error::Error};
 
 use clap::Parser;
-use tokio::sync::{broadcast, mpsc};
+use tokio::sync::mpsc::{self, Sender};
 use tx_processing_engine::{
     client::client::Client,
     tx::{execution_engine::Engine, transaction::Transaction},
@@ -14,7 +13,11 @@ use tx_processing_engine::{
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // application args
+    let args = Args::parse();
+    // detect max threads supported
     let max_threads_supported = num_cpus::get();
+    // how many processor to spawn
     let processor_count = u16::try_from(max_threads_supported).unwrap_or(16);
 
     let mut account_state: HashMap<u16, Client> = HashMap::new();
@@ -22,48 +25,31 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let (result_sender, mut result_receiver) =
         mpsc::channel::<HashMap<u16, Client>>(max_threads_supported);
 
-    let (emitter, subscriber) = broadcast::channel::<Transaction>(4 * max_threads_supported);
+    // repository of sender for each shard
+    let mut sender_repository: HashMap<u16, Sender<Transaction>> = HashMap::new();
 
-    let emitter_clone = emitter.clone();
-    let mut handles = Vec::new();
-    let file_handle = tokio::spawn(async move {
-        let file = Args::parse().file;
-        for result in parse(file).expect("unable to open file ").deserialize() {
-            // The iterator yields Result<StringRecord, Error>, so we check the
-            // error here.
-            match result {
-                Ok(tx) => {
-                    emitter_clone.send(tx).expect("unable to send msg");
-                }
-                _ => (),
-            }
-        }
-    });
-    handles.push(file_handle);
+    // state of task
+    let should_log_errors = Args::parse().log_errors;
 
     for task_counter in 0..processor_count {
         let result_sender_clone = result_sender.clone();
-        let mut receiver = emitter.subscribe();
+        // create separate mpsc channel for each processor
+        let (sender, mut receiver) = mpsc::channel::<Transaction>(10_000);
+        sender_repository.insert(task_counter, sender);
 
-        let handle = tokio::spawn(async move {
-            // state of task
-            let should_log_errors = Args::parse().log_errors;
+        // tx engine instance per shard
+        tokio::spawn(async move {
             // unique id for receiver
-            let receiver_id = task_counter;
-            // channels listening from
 
             // task native engine instance
             let mut exec_engine = Engine::initialize();
 
-            while let Ok(tx) = receiver.recv().await {
-                if tx.get_client_id() % processor_count == receiver_id {
-                    // if this transaction doesn't belong to the current shard just return
-                    match exec_engine.execute_transaction(tx) {
-                        Ok(_) => (),
-                        Err(err) => {
-                            if should_log_errors {
-                                eprintln!("{}", err);
-                            }
+            while let Some(tx) = receiver.recv().await {
+                match exec_engine.execute_transaction(tx) {
+                    Ok(_) => (),
+                    Err(err) => {
+                        if should_log_errors {
+                            eprintln!("{}", err);
                         }
                     }
                 }
@@ -71,30 +57,62 @@ async fn main() -> Result<(), Box<dyn Error>> {
             result_sender_clone
                 .send(exec_engine.get_account_state_owned())
                 .await
-                .map(|_| println!("result sent"))
+                .map(|_| {
+                    println!(
+                        "processor: sending computed shard result: {:?}",
+                        exec_engine.get_account_state_owned()
+                    )
+                })
                 .map_err(|err| eprintln!("{}", err))
                 .expect("Error occurred while sending computation result back")
         });
-        handles.push(handle);
     }
-
-    let rec_handle = tokio::spawn(async move {
-        while let Some(result) = result_receiver.recv().await {
-            account_state.extend(result.into_iter());
-        }
-        csv_output_writer::write_csv_to_console(&account_state).unwrap();
-    });
-    // drop extra emitter
-    drop(emitter);
-    // drop the extra subscriber
-    drop(subscriber);
-    // drop the extra result sender
     drop(result_sender);
 
-    for handle in handles {
-        tokio::join!(handle).0.unwrap();
+    match parse(args.file) {
+        Ok(mut reader) => {
+            tokio::spawn(async move {
+                for result in reader.deserialize::<Transaction>() {
+                    // The iterator yields Result<StringRecord, Error>, so we check the
+                    // error here.
+                    match result {
+                        Ok(tx) => {
+                            match sender_repository.get(&(&tx.get_client_id() % processor_count)) {
+                                Some(sender) => {
+                                    sender.send(tx).await.unwrap_or_else(|_| {
+                                        if args.log_errors {
+                                            eprintln!("sending failed")
+                                        }
+                                    });
+                                }
+                                None => {
+                                    if args.log_errors {
+                                        eprintln!("Sender not found");
+                                    }
+                                }
+                            }
+                        }
+                        _ => {
+                            if args.log_errors {
+                                eprintln!("malformed entry found skipping");
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        Err(_) => (),
     }
 
-    tokio::join!(rec_handle).0.unwrap();
+    while let Some(result) = result_receiver.recv().await {
+        println!("Got result: {:?}", &result);
+        account_state.extend(result.into_iter());
+    }
+    csv_output_writer::write_csv_to_console(&account_state).unwrap_or_else(|_| {
+        if args.log_errors {
+            eprintln!("error while writing output to console");
+        }
+    });
+
     Ok(())
 }
