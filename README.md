@@ -47,8 +47,8 @@ Following probability tree was considered while engineering the solution
 
 ## Use cases covered
 
-## Description of cases covered
-details of following cases be found [here ↗](test_input/desc.md)
+### Description of cases covered
+> in depth description of following cases be found [here ↗](test_input/desc.md)
 
 The following flows have been covered
 1. genesis -> deposit  
