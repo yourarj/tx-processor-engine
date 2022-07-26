@@ -112,7 +112,7 @@ impl Engine {
     fn validate_transaction(tx: &Transaction) -> Result<(), TransactionError> {
         match tx.get_type() {
             TransactionType::deposit | TransactionType::withdrawal => {
-                if tx.get_amt() < 0.0_f64 {
+                if tx.get_amt() < 0.0_f64 || tx.get_amt().is_infinite() {
                     Err(TransactionError::InvalidTransactionAmount(
                         tx.get_id(),
                         tx.get_amt(),
