@@ -1,6 +1,25 @@
 # Awesome TXpro Engine 
 An Awesome 😎 tx processor engine
 
+Processes csv files containing transactions performed by the clients and yields the final state of all involved clients as output of the processing 
+
+e.g. input 
+```csv
+type,       client, tx, amount
+deposit,    1,      1,  1.0
+deposit,    2,      2,  2.0
+deposit,    1,      3,  2.0
+withdrawal, 1,      4,  1.5
+withdrawal, 2,      5,  3.0
+```
+
+expected output
+```csv
+client, available,  held,   total,  locked
+1,      1.5,        0.0,    1.5,    false
+2,      2.0,        0.0,    2.0,    false
+```
+
 ## Assumptions:
 
 - Once disputed transaction is `RESOLVED`/`CHARGEBACKED` it can't be `DISPUTE`d again
