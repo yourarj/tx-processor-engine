@@ -7,9 +7,8 @@ use tx_processing_engine::{
 
 /// main method processing file
 fn main() -> Result<(), Box<dyn Error>> {
-    let file = Args::parse().file;
-    let should_log_errors = Args::parse().log_errors;
-    let account_state = process_file(file, should_log_errors)?;
+    let args = Args::parse();
+    let account_state = process_file(args.file, args.log_errors, args.unsafe_mode)?;
     csv_output_writer::write_csv_to_console(&account_state)?;
     Ok(())
 }
@@ -17,24 +16,25 @@ fn main() -> Result<(), Box<dyn Error>> {
 /// file processing
 /// input: String: filepath
 /// input: bool: should print error
-fn process_file(file: String, log_errors: bool) -> Result<HashMap<u16, Client>, Box<dyn Error>> {
+fn process_file(
+    file: String,
+    log_errors: bool,
+    unsafe_mode: bool,
+) -> Result<HashMap<u16, Client>, Box<dyn Error>> {
     let mut exec_engine = Engine::initialize();
-    // TODO handle deserialization error for a malformed record
-    for result in parse(file)?.deserialize() {
-        // The iterator yields Result<StringRecord, Error>, so we check the
-        // error here.
+
+    for result in parse(file, unsafe_mode)?.deserialize() {
         match result {
-            Ok(tx) => match exec_engine.execute_transaction(tx) {
-                Ok(_) => (),
-                Err(err) => {
+            Ok(tx) => {
+                if let Err(err) = exec_engine.execute_transaction(tx) {
                     if log_errors {
-                        eprintln!("{}", err);
+                        eprintln!("PROCESSING_TX_ERROR: {}", err);
                     }
                 }
-            },
+            }
             Err(err) => {
                 if log_errors {
-                    eprintln!("skipped invalid TX: {}", err);
+                    eprintln!("INVALID_CSV_ROW: {}", err);
                 }
             }
         }
@@ -51,7 +51,7 @@ mod tests {
     // - should succeed
     #[test]
     fn case_01() {
-        let result = process_file(String::from("./test_input/case_01.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_01.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(1.0, acc.get_available());
@@ -65,7 +65,7 @@ mod tests {
     // - ignore
     #[test]
     fn case_02() {
-        let result = process_file(String::from("./test_input/case_02.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_02.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -79,7 +79,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_03() {
-        let result = process_file(String::from("./test_input/case_03.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_03.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -93,7 +93,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_04() {
-        let result = process_file(String::from("./test_input/case_04.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_04.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -107,7 +107,7 @@ mod tests {
     // - ignore
     #[test]
     fn case_05() {
-        let result = process_file(String::from("./test_input/case_05.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_05.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -121,7 +121,7 @@ mod tests {
     // - succeed
     #[test]
     fn case_06() {
-        let result = process_file(String::from("./test_input/case_06.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_06.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.5, acc.get_available());
@@ -135,7 +135,7 @@ mod tests {
     // - succeed
     #[test]
     fn case_07() {
-        let result = process_file(String::from("./test_input/case_07.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_07.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -149,7 +149,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_08() {
-        let result = process_file(String::from("./test_input/case_08.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_08.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(1.0, acc.get_available());
@@ -163,7 +163,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_09() {
-        let result = process_file(String::from("./test_input/case_09.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_09.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(1.0, acc.get_available());
@@ -177,7 +177,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_10() {
-        let result = process_file(String::from("./test_input/case_10.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_10.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.9, acc.get_available());
@@ -191,7 +191,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_11() {
-        let result = process_file(String::from("./test_input/case_11.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_11.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -205,7 +205,7 @@ mod tests {
     //    - succeed
     #[test]
     fn case_12() {
-        let result = process_file(String::from("./test_input/case_12.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_12.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(1.0, acc.get_available());
@@ -220,7 +220,7 @@ mod tests {
     //    - succeed
     #[test]
     fn case_13() {
-        let result = process_file(String::from("./test_input/case_13.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_13.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(2.0, acc.get_available());
@@ -234,7 +234,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_14() {
-        let result = process_file(String::from("./test_input/case_14.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_14.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -248,7 +248,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_15() {
-        let result = process_file(String::from("./test_input/case_15.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_15.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(1.0, acc.get_available());
@@ -262,7 +262,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_16() {
-        let result = process_file(String::from("./test_input/case_16.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_16.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(1.0, acc.get_available());
@@ -276,7 +276,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_17() {
-        let result = process_file(String::from("./test_input/case_17.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_17.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(1.0, acc.get_available());
@@ -290,7 +290,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_18() {
-        let result = process_file(String::from("./test_input/case_18.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_18.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -304,7 +304,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_19() {
-        let result = process_file(String::from("./test_input/case_19.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_19.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -318,7 +318,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_20() {
-        let result = process_file(String::from("./test_input/case_20.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_20.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -332,7 +332,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_21() {
-        let result = process_file(String::from("./test_input/case_21.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_21.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -346,7 +346,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_22() {
-        let result = process_file(String::from("./test_input/case_22.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_22.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.5, acc.get_available());
@@ -361,7 +361,7 @@ mod tests {
     //    - ignore
     #[test]
     fn case_23() {
-        let result = process_file(String::from("./test_input/case_23.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_23.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -369,7 +369,7 @@ mod tests {
     // try withdrawing negative amount
     #[test]
     fn case_24() {
-        let result = process_file(String::from("./test_input/case_24.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_24.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -377,7 +377,7 @@ mod tests {
     // add deposit two amount exactly f64::MAX
     #[test]
     fn case_25() {
-        let result = process_file(String::from("./test_input/case_25.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_25.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(f64::MAX, acc.get_available());
@@ -389,7 +389,7 @@ mod tests {
     // tx amount larger that max size of f64
     #[test]
     fn case_26() {
-        let result = process_file(String::from("./test_input/case_26.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_26.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -397,7 +397,7 @@ mod tests {
     // try deposit without amount
     #[test]
     fn case_27() {
-        let result = process_file(String::from("./test_input/case_27.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_27.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -409,7 +409,7 @@ mod tests {
     // try withdrawal without amount
     #[test]
     fn case_28() {
-        let result = process_file(String::from("./test_input/case_28.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_28.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -421,7 +421,7 @@ mod tests {
     // deposit without client id
     #[test]
     fn case_29() {
-        let result = process_file(String::from("./test_input/case_29.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_29.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -429,7 +429,7 @@ mod tests {
     // deposit without transaction id
     #[test]
     fn case_30() {
-        let result = process_file(String::from("./test_input/case_30.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_30.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -437,7 +437,7 @@ mod tests {
     // withdrawal without client id
     #[test]
     fn case_31() {
-        let result = process_file(String::from("./test_input/case_31.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_31.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -445,7 +445,7 @@ mod tests {
     // withdrawal without transaction id
     #[test]
     fn case_32() {
-        let result = process_file(String::from("./test_input/case_32.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_32.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -453,7 +453,7 @@ mod tests {
     // dispute with client id
     #[test]
     fn case_33() {
-        let result = process_file(String::from("./test_input/case_33.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_33.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -461,7 +461,7 @@ mod tests {
     // dispute without tx id
     #[test]
     fn case_34() {
-        let result = process_file(String::from("./test_input/case_34.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_34.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -469,7 +469,7 @@ mod tests {
     // resolve without client id
     #[test]
     fn case_35() {
-        let result = process_file(String::from("./test_input/case_35.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_35.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -477,7 +477,7 @@ mod tests {
     // resolve without tx id
     #[test]
     fn case_36() {
-        let result = process_file(String::from("./test_input/case_36.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_36.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -485,7 +485,7 @@ mod tests {
     // chargeback without client id
     #[test]
     fn case_37() {
-        let result = process_file(String::from("./test_input/case_37.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_37.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -493,7 +493,7 @@ mod tests {
     // chargeback without tx id
     #[test]
     fn case_38() {
-        let result = process_file(String::from("./test_input/case_38.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_38.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
@@ -501,7 +501,7 @@ mod tests {
     // withdraw amount exactly f64::MAX
     #[test]
     fn case_39() {
-        let result = process_file(String::from("./test_input/case_39.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_39.csv"), true, false).unwrap();
         let acc = result.get(&1).unwrap();
         assert_eq!(1, acc.get_client());
         assert_eq!(0.0, acc.get_available());
@@ -512,28 +512,28 @@ mod tests {
     // client id smaller than 0 (negative)
     #[test]
     fn case_40() {
-        let result = process_file(String::from("./test_input/case_40.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_40.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
     // clint id larger than f16::MAX
     #[test]
     fn case_41() {
-        let result = process_file(String::from("./test_input/case_41.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_41.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
     // tx id smaller than 0 (negative)
     #[test]
     fn case_42() {
-        let result = process_file(String::from("./test_input/case_42.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_42.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }
     // tx id larger than u32::MAX
     #[test]
     fn case_43() {
-        let result = process_file(String::from("./test_input/case_43.csv"), true).unwrap();
+        let result = process_file(String::from("./test_input/case_43.csv"), true, false).unwrap();
         // tx should be discarded
         assert_eq!(true, result.get(&1).is_none());
     }

@@ -79,7 +79,8 @@ impl Client {
             Err(ClientError::InsufficientAccountBalance(self.client))
         } else if self.locked {
             Err(ClientError::ClientAccountLocked(self.client))
-        }else if (self.available - amt).is_sign_negative() || (self.total - amt).is_sign_negative() {
+        } else if (self.available - amt).is_sign_negative() || (self.total - amt).is_sign_negative()
+        {
             Err(ClientError::ClientFundsWouldOverflow(self.client))
         } else {
             self.available -= amt;

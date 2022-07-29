@@ -28,9 +28,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // repository of sender for each shard
     let mut sender_repository: HashMap<u16, Sender<Transaction>> = HashMap::new();
 
-    // state of task
-    let should_log_errors = Args::parse().log_errors;
-
     for task_counter in 0..processor_count {
         let result_sender_clone = result_sender.clone();
         // create separate mpsc channel for each processor
@@ -45,12 +42,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let mut exec_engine = Engine::initialize();
 
             while let Some(tx) = receiver.recv().await {
-                match exec_engine.execute_transaction(tx) {
-                    Ok(_) => (),
-                    Err(err) => {
-                        if should_log_errors {
-                            eprintln!("{}", err);
-                        }
+                if let Err(err) = exec_engine.execute_transaction(tx) {
+                    if args.log_errors {
+                        eprintln!("{}", err);
                     }
                 }
             }
@@ -69,7 +63,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     drop(result_sender);
 
-    match parse(args.file) {
+    match parse(args.file, args.unsafe_mode) {
         Ok(mut reader) => {
             tokio::spawn(async move {
                 for result in reader.deserialize::<Transaction>() {
