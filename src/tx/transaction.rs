@@ -70,7 +70,7 @@ impl Transaction {
         }
     }
 
-    /// check the conditions 
+    /// check the conditions
     pub fn is_marked_resolved(&mut self) -> Result<(), TransactionError> {
         match self.status {
             Some(TransactionStatus::resolved) => Ok(()),
@@ -86,7 +86,7 @@ impl Transaction {
         }
     }
 
-    /// check the conditions 
+    /// check the conditions
     pub fn mark_under_dispute(&mut self) -> Result<(), TransactionError> {
         match self.status {
             None => {

@@ -1,3 +1,5 @@
+#![cfg(feature = "csv_sync")]
+
 use std::collections::HashMap;
 use std::error::Error;
 use std::io::{stdout, BufWriter};

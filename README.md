@@ -33,12 +33,17 @@ client, available,  held,   total,  locked
  - Run with  `cargo run -- <path_to_csv_file>` 
 
  - Run with error to std err `cargo run -- -l <path_to_csv_file>`
+  
+ - Run in unsafe mode `cargo run -- -u <path_to_csv_file>`
+   - thi mode almost TWICE the performance of safe mode
+   - assumes the input csv has no violations of space and columns in any row 
+   - any row with violations will be skipped
 
  - Get app version with  `cargo run -- -V`
 
 ### help preview
 ```
-tx-processor-engine 1.0.0
+tx-processor-engine 1.1.0
 Shinde Arjun
 An awesome 😎 transaction processing engine
 
@@ -46,12 +51,14 @@ USAGE:
     tx_executor [OPTIONS] <FILE>
 
 ARGS:
-    <FILE>    file to process
+    <FILE>    path of file to process
 
 OPTIONS:
-    -h, --help          Print help information
-    -l, --log-errors    should log errors?
-    -V, --version       Print version information
+    -h, --help           Print help information
+    -l, --log-errors     Enable error logging [default: false]
+    -u, --unsafe-mode    Run in unsafe mode?, considers input csv is sanitized for spaces and column
+                         length. trade off between flexibility and performance. [default: false]
+    -V, --version        Print version information
 ```
 
 
