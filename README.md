@@ -9,19 +9,20 @@ Have tried multiple approaches can enabled with following features
    - implemented with [csv crate](https://github.com/BurntSushi/rust-csv)
    - fastest
    - can be made even faster with `--unsafe-mode` switch (please refer --help for details)
-   - run with `cargo run -- transactions.csv > accounts.csv`
+   - > run with `cargo run -- transactions.csv > accounts.csv`
    - run with faster unsafe `cargo run -- --unsafe-mode transactions.csv > accounts.csv`
 2. ### `csv_async`
    - implemented with [csv-async crate](https://github.com/gwierzchowski/csv-async)
-   - run with `cargo run --no-default-features --features csv_async --bin csv_async_engine -- transactions.csv > accounts.csv`
+   - run with `cargo run --no-default-features --features csv_async --bin async_tx_executor -- transactions.csv > accounts.csv`
 3. ### `tokio`
    - implemented with [tokio crate](https://github.com/tokio-rs/tokio)
    - run with `cargo run --no-default-features --features tokio --bin tokio_tx_executor -- transactions.csv > accounts.csv`
 4. ### `rayon`
+5. - ### WIP
    - implemented with [rayon crate](https://github.com/rayon-rs/rayon)
    - run with `cargo run --no-default-features --features rayon --bin rayon_tx_executor -- transactions.csv > accounts.csv`
-5. ### `arrow`
-   - WIP
+6. ### `arrow`
+   - ### WIP
    - implemented with [apache arrow crate](https://github.com/apache/arrow-rs)
    - run with `cargo run --no-default-features --features arrow --bin apache_arrow_tx_executor -- transactions.csv > accounts.csv`
 

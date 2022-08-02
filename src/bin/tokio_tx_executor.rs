@@ -51,12 +51,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
             result_sender_clone
                 .send(exec_engine.get_account_state_owned())
                 .await
-                .map(|_| {
-                    println!(
-                        "processor: sending computed shard result: {:?}",
-                        exec_engine.get_account_state_owned()
-                    )
-                })
                 .map_err(|err| eprintln!("{}", err))
                 .expect("Error occurred while sending computation result back")
         });
@@ -99,7 +93,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     while let Some(result) = result_receiver.recv().await {
-        println!("Got result: {:?}", &result);
         account_state.extend(result.into_iter());
     }
     csv_output_writer::write_csv_to_console(&account_state).unwrap_or_else(|_| {
